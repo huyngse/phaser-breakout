@@ -5,7 +5,6 @@ import Paddle from "../objects/Paddle";
 import Ball from "../objects/Ball";
 import SoundManager from "../utils/SoundManager";
 import GameManager from "../utils/GameManager";
-import type HUDScene from "./HUDScene";
 
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
 
@@ -15,6 +14,7 @@ export default class GameScene extends Phaser.Scene {
     private bricks!: Phaser.Physics.Arcade.StaticGroup;
     private soundManager!: SoundManager;
     private gameManager!: GameManager;
+    private ballWaitingToReset = false;
 
     constructor() {
         super("GameScene");
@@ -24,7 +24,7 @@ export default class GameScene extends Phaser.Scene {
         this.soundManager = SoundManager.getInstance(this);
         this.gameManager = new GameManager();
 
-        this.physics.world.setBoundsCollision(true, true, true, true);
+        this.physics.world.setBoundsCollision(true, true, true, false);
         this.paddle = new Paddle(this, 400, 550, ASSETS.IMAGES.PADDLE);
         this.ball = new Ball(this, 400, 530, ASSETS.IMAGES.BALL);
         this.ball.collideWithPaddle(this.paddle);
@@ -56,8 +56,29 @@ export default class GameScene extends Phaser.Scene {
         this.paddle.update();
         this.ball.update();
 
-        const hudScene = this.scene.get("HUDScene") as HUDScene;
-        hudScene.updateHUD();
+        if (this.ball.sprite.y > this.scale.height && !this.ballWaitingToReset) {
+            this.handleBallFall();
+        }
+    }
+
+    private handleBallFall() {
+        this.gameManager.loseLife();
+        if (this.gameManager.getLifes() > 0) {
+            this.soundManager.play(ASSETS.SOUNDS.DAMAGE);
+            this.ballWaitingToReset = true;
+            this.time.delayedCall(
+                1000,
+                () => {
+                    this.ball.reset(this.paddle.sprite.x, this.paddle.sprite.y - 20);
+                    this.ballWaitingToReset = false;
+                }
+            );
+        } else {
+            this.soundManager.play(ASSETS.SOUNDS.GAME_OVER);
+            this.scene.launch("GameOverScene", { manager: this.gameManager });
+            this.scene.bringToTop("GameOverScene");
+            this.scene.pause();
+        }
     }
 
     hitBrick(ball: Phaser.Physics.Arcade.Image, brick: Phaser.Physics.Arcade.Image) {

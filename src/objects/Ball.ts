@@ -13,8 +13,7 @@ export default class Ball {
         this.sprite.setBounce(1, 1);
         this.sprite.setDisplaySize(gameConfig.ball.radius * 2, gameConfig.ball.radius * 2);
 
-        const ballVector = new Phaser.Math.Vector2(1, -1).normalize();
-        this.sprite.setVelocity(ballVector.x * gameConfig.ball.speed, ballVector.y * gameConfig.ball.speed);
+        this.setInitialVelocity();
     }
 
     update() {
@@ -27,11 +26,14 @@ export default class Ball {
 
     reset(x: number, y: number) {
         this.sprite.setPosition(x, y);
-        const ballVector = new Phaser.Math.Vector2(1, -1).normalize();
-        this.sprite.setVelocity(ballVector.x * gameConfig.ball.speed, ballVector.y * gameConfig.ball.speed);
+        this.setInitialVelocity();
     }
 
     collideWithPaddle(paddle: Paddle) {
         this.scene.physics.add.collider(this.sprite, paddle.sprite, () => paddle.hitBall(this.sprite));
+    }
+
+    setInitialVelocity() {
+        this.sprite.setVelocity(Math.random() * 400 - 200, -300);
     }
 }

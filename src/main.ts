@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import GameScene from "./scenes/GameScene";
 import PreloadScene from "./scenes/PreloadScene";
 import HUDScene from "./scenes/HUDScene";
+import GameOverScene from "./scenes/GameOverScene";
 
 window.onerror = function (message, source, lineno, colno, _error) {
   console.error("Crash detected! ", message, "at", source, lineno + ":" + colno);
@@ -34,7 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [PreloadScene, GameScene, HUDScene],
+  scene: [PreloadScene, GameScene, HUDScene, GameOverScene],
 };
 
 new Phaser.Game(config);

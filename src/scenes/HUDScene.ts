@@ -4,6 +4,7 @@ import { gameConfig } from "../config/gameConfig";
 import type GameManager from "../utils/GameManager";
 
 const config = gameConfig.HUD;
+
 export default class HUDScene extends Phaser.Scene {
     private gameManager!: GameManager;
     private levelText!: Phaser.GameObjects.Text;
@@ -41,15 +42,23 @@ export default class HUDScene extends Phaser.Scene {
         this.levelText = this.add.text(width - config.level.offset_x, y, `LEVEL: ${this.gameManager.getLevel()}`, {
             ...config.text
         }).setOrigin(1, 0);
+
+        this.gameManager.on("scoreChanged", this.onScoreChanged, this);
+        this.gameManager.on("levelChanged", this.onLevelChanged, this);
+        this.gameManager.on("lifesChanged", this.onLifesChanged, this);
     }
 
-    updateHUD() {
-        this.scoreText.setText(`SCORE: ${this.gameManager.getScore()}`);
-        this.levelText.setText(`LEVEL: ${this.gameManager.getLevel()}`);
+    private onScoreChanged(newScore: number) {
+        this.scoreText.setText(`SCORE: ${newScore}`)
+    }
 
-        const lifes = this.gameManager.getLifes();
+    private onLevelChanged(newLevel: number) {
+        this.levelText.setText(`LEVEL: ${newLevel}`)
+    }
+
+    private onLifesChanged(newLifes: number) {
         this.hearts.forEach((heart, i) => {
-            heart.setVisible(i < lifes);
-        })
+            heart.setVisible(i < newLifes);
+        });
     }
 }
