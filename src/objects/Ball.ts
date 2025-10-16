@@ -21,7 +21,13 @@ export default class Ball {
         const velocity = this.sprite.body.velocity;
         const speed = gameConfig.ball.speed;
         const normalized = velocity.clone().normalize();
-        this.sprite.setVelocity(normalized.x * speed, normalized.y * speed)
+
+        const minY = 0.3;
+        if (Math.abs(normalized.y) < minY) {
+            normalized.y = normalized.y < 0 ? -minY : minY;
+            normalized.x = Math.sqrt(1 - normalized.y ** 2) * (normalized.x < 0 ? -1 : 1);
+        }
+        this.sprite.setVelocity(normalized.x * speed, normalized.y * speed);
     }
 
     reset(x: number, y: number) {

@@ -40,16 +40,24 @@ export default class SoundManager {
         this.soundPools.set(key, pool);
     }
 
-    play(key: string) {
+    play(key: string, volume?: number) {
         const pool = this.soundPools.get(key);
         if (!pool) return;
 
+
         const available = pool.find(s => !s.isPlaying);
         if (available) {
+            if (volume !== undefined && "volume" in available) {
+                available.volume = Phaser.Math.Clamp(volume, 0, 1);
+            }
             available.play();
         } else {
-            pool[0].stop();
-            pool[0].play();
+            const first = pool[0];
+            first.stop();
+            if (volume !== undefined && "volume" in first) {
+                first.volume = Phaser.Math.Clamp(volume, 0, 1);
+            }
+            first.play();
         }
     }
 
