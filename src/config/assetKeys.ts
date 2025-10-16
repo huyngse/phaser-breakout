@@ -21,6 +21,8 @@ export const ASSETS = {
         BREAK: "break",
         POWERUP: "powerup",
         DAMAGE: "damage",
+        NEXT_LEVEL: "next-level",
         GAME_OVER: "game-over",
+        VICTORY: "victory",
     }
 }

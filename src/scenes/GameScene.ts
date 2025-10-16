@@ -1,11 +1,11 @@
 import Phaser from "phaser"
 import { ASSETS } from "../config/assetKeys";
-import { gameConfig } from "../config/gameConfig";
 import Paddle from "../objects/Paddle";
 import Ball from "../objects/Ball";
 import SoundManager from "../utils/SoundManager";
 import GameManager from "../utils/GameManager";
 import PowerUp, { PowerUpTypes } from "../objects/PowerUp";
+import LevelManager from "../utils/LevelManager";
 
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
 
@@ -15,7 +15,9 @@ export default class GameScene extends Phaser.Scene {
     private bricks!: Phaser.Physics.Arcade.StaticGroup;
     private soundManager!: SoundManager;
     private gameManager!: GameManager;
+    private levelManager!: LevelManager;
     private ballWaitingToReset = false;
+    private remainingBricks = 0;
 
     private powerUpPool!: Phaser.GameObjects.Group;
 
@@ -26,6 +28,7 @@ export default class GameScene extends Phaser.Scene {
     create() {
         this.soundManager = SoundManager.getInstance(this);
         this.gameManager = new GameManager();
+        this.levelManager = new LevelManager();
 
         this.physics.world.setBoundsCollision(true, true, true, false);
         this.paddle = new Paddle(this, 400, 550, ASSETS.IMAGES.PADDLE);
@@ -35,21 +38,8 @@ export default class GameScene extends Phaser.Scene {
         this.ball.collideWithPaddle(this.paddle);
 
         this.bricks = this.physics.add.staticGroup();
-        const { rows, cols, width, height, padding, offsetTop, offsetLeft } = gameConfig.brick;
-        const colors = [0xff5555, 0xffaa00, 0x55ff55, 0x5555ff];
-
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const x = offsetLeft + col * width;
-                const y = offsetTop + row * (height + padding);
-
-                const brick = this.bricks.create(x, y, ASSETS.IMAGES.BRICK) as Phaser.Physics.Arcade.Image;
-                brick.setDisplaySize(width, height);
-                brick.setOrigin(0, 0);
-                brick.refreshBody();
-                brick.setTint(colors[row % colors.length])
-            }
-        }
+        this.levelManager.createBricks(this.bricks, this.gameManager.getLevel());
+        this.remainingBricks = this.bricks.countActive();
 
         this.physics.add.collider(this.ball.sprite, this.bricks, this.hitBrick.bind(this) as ArcadePhysicsCallback);
 
@@ -111,10 +101,31 @@ export default class GameScene extends Phaser.Scene {
         }
 
         brick.destroy();
+        this.remainingBricks--;
+        if (this.remainingBricks <= 0) {
+            this.handleLevelComplete();
+        }
     }
 
     collectPowerUp(powerUp: PowerUp, paddle: Phaser.Physics.Arcade.Image) {
         this.soundManager.play(ASSETS.SOUNDS.POWERUP, 0.3);
         powerUp.deactivate();
+    }
+
+    private handleLevelComplete() {
+        this.soundManager.play(ASSETS.SOUNDS.NEXT_LEVEL);
+        if (this.gameManager.getLevel() < this.levelManager.getTotalLevels()) {
+            this.time.delayedCall(1000, () => {
+                this.gameManager.nextLevel();
+                this.levelManager.createBricks(this.bricks, this.gameManager.getLevel());
+                this.remainingBricks = this.bricks.countActive();
+                this.ball.reset(this.paddle.sprite.x, this.paddle.sprite.y - 20);
+            })
+        } else {
+            this.soundManager.play(ASSETS.SOUNDS.VICTORY);
+            this.scene.launch("GameOverScene", { manager: this.gameManager });
+            this.scene.bringToTop("GameOverScene");
+            this.scene.pause();
+        }
     }
 }

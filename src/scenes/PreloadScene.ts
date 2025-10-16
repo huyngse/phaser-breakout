@@ -28,6 +28,8 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.audio(ASSETS.SOUNDS.POWERUP, "assets/sounds/sfx_sounds_powerup7.wav");
         this.load.audio(ASSETS.SOUNDS.DAMAGE, "assets/sounds/sfx_sounds_damage3.wav");
         this.load.audio(ASSETS.SOUNDS.GAME_OVER, "assets/sounds/sfx_sounds_negative1.wav");
+        this.load.audio(ASSETS.SOUNDS.NEXT_LEVEL, "assets/sounds/sfx_sounds_powerup16.wav");
+        this.load.audio(ASSETS.SOUNDS.VICTORY, "assets/sounds/sfx_sounds_pause7_in.wav");
     }
 
     create() {
