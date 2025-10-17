@@ -4,8 +4,8 @@ import Paddle from "../objects/Paddle";
 import Ball from "../objects/Ball";
 import SoundManager from "../utils/SoundManager";
 import GameManager from "../utils/GameManager";
-import PowerUp, { PowerUpTypes } from "../objects/PowerUp";
 import LevelManager from "../utils/LevelManager";
+import PowerUpManager from "../utils/PowerUpManager";
 
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
 
@@ -16,10 +16,8 @@ export default class GameScene extends Phaser.Scene {
     private soundManager!: SoundManager;
     private gameManager!: GameManager;
     private levelManager!: LevelManager;
+    private powerUpManager!: PowerUpManager;
     private ballWaitingToReset = false;
-    private remainingBricks = 0;
-
-    private powerUpPool!: Phaser.GameObjects.Group;
 
     constructor() {
         super("GameScene");
@@ -39,15 +37,10 @@ export default class GameScene extends Phaser.Scene {
 
         this.bricks = this.physics.add.staticGroup();
         this.levelManager.createBricks(this.bricks, this.gameManager.getLevel());
-        this.remainingBricks = this.bricks.countActive();
+
+        this.powerUpManager = new PowerUpManager(this, this.paddle, this.soundManager);
 
         this.physics.add.collider(this.ball.sprite, this.bricks, this.hitBrick.bind(this) as ArcadePhysicsCallback);
-
-        this.powerUpPool = this.add.group({
-            classType: PowerUp,
-            maxSize: 20,
-            runChildUpdate: true
-        })
 
         this.scene.launch("HUDScene", { manager: this.gameManager });
         this.scene.bringToTop("HUDScene");
@@ -86,31 +79,12 @@ export default class GameScene extends Phaser.Scene {
         this.soundManager.play(ASSETS.SOUNDS.BREAK);
         this.gameManager.addScore(10);
 
-        if (Math.random() < 0.8) {
-            const powerUpType = PowerUpTypes[Math.floor(Math.random() * PowerUpTypes.length)];
-
-            let powerUp = this.powerUpPool.getFirstDead(false) as PowerUp;
-            if (!powerUp) {
-                powerUp = new PowerUp(this, brick.x + brick.width / 2, brick.y + brick.height / 2, powerUpType);
-                this.powerUpPool.add(powerUp);
-            } else {
-                powerUp.activate(brick.x + brick.width / 2, brick.y + brick.height / 2, powerUpType)
-            }
-
-            this.physics.add.collider(powerUp, this.paddle.sprite, this.collectPowerUp.bind(this) as ArcadePhysicsCallback);
-        }
-
+        this.powerUpManager.spawn(brick);
         brick.destroy();
-        this.remainingBricks--;
-        if (this.remainingBricks <= 0) {
-            this.handleLevelComplete();
-        }
+        this.levelManager.handleBrickDestroyed(this.handleLevelComplete.bind(this));
     }
 
-    collectPowerUp(powerUp: PowerUp, paddle: Phaser.Physics.Arcade.Image) {
-        this.soundManager.play(ASSETS.SOUNDS.POWERUP, 0.3);
-        powerUp.deactivate();
-    }
+
 
     private handleLevelComplete() {
         this.soundManager.play(ASSETS.SOUNDS.NEXT_LEVEL);
@@ -118,7 +92,6 @@ export default class GameScene extends Phaser.Scene {
             this.time.delayedCall(1000, () => {
                 this.gameManager.nextLevel();
                 this.levelManager.createBricks(this.bricks, this.gameManager.getLevel());
-                this.remainingBricks = this.bricks.countActive();
                 this.ball.reset(this.paddle.sprite.x, this.paddle.sprite.y - 20);
             })
         } else {

@@ -4,6 +4,7 @@ import { ASSETS } from "../config/assetKeys";
 export default class LevelManager {
     private colors = [0xff5555, 0xffaa00, 0x55ff55, 0x5555ff];
     private totalLevels: number = 3;
+    private remainingBricks = 0;
 
     getTotalLevels() {
         return this.totalLevels;
@@ -27,5 +28,18 @@ export default class LevelManager {
                 brick.setTint(this.colors[row % this.colors.length])
             }
         }
+
+        this.remainingBricks = bricksGroup.countActive();
+    }
+
+    handleBrickDestroyed(onLevelComplete: () => void) {
+        this.remainingBricks--;
+        if (this.remainingBricks <= 0) {
+            onLevelComplete();
+        }
+    }
+
+    getRemainingBricks() {
+        return this.remainingBricks;
     }
 }
