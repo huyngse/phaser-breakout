@@ -14,6 +14,7 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image(ASSETS.IMAGES.PADDLE_LONG, "assets/images/paddle-long.png");
         this.load.image(ASSETS.IMAGES.PADDLE_SHORT, "assets/images/paddle-short.png");
         this.load.image(ASSETS.IMAGES.LIFE, "assets/images/heart.png");
+        
         this.load.image(ASSETS.IMAGES.PU_EXPAND, "assets/images/expand-paddle.png");
         this.load.image(ASSETS.IMAGES.PU_MAGNET, "assets/images/magnet.png");
         this.load.image(ASSETS.IMAGES.PU_MULTI_BALL, "assets/images/multi-ball.png");

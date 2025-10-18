@@ -12,7 +12,7 @@ export const PowerUpTypes = [
     "fast"
 ] as const;
 
-type PowerUpType = typeof PowerUpTypes[number];
+export type PowerUpType = typeof PowerUpTypes[number];
 
 const powerUpTextures: Record<PowerUpType, string> = {
     "multi-ball": ASSETS.IMAGES.PU_MULTI_BALL,

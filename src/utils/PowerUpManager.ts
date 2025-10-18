@@ -1,8 +1,9 @@
 import Phaser from "phaser";
 import type Paddle from "../objects/Paddle";
 import type SoundManager from "./SoundManager";
-import PowerUp, { PowerUpTypes } from "../objects/PowerUp";
+import PowerUp, { PowerUpTypes, type PowerUpType } from "../objects/PowerUp";
 import { ASSETS } from "../config/assetKeys";
+import type GameManager from "./GameManager";
 
 type ArcadePhysicsCallback = Phaser.Types.Physics.Arcade.ArcadePhysicsCallback;
 
@@ -12,6 +13,7 @@ export default class PowerUpManager {
     constructor(
         private scene: Phaser.Scene,
         private paddle: Paddle,
+        private gameManager: GameManager,
         private soundManager: SoundManager
     ) {
         this.pool = scene.add.group({
@@ -52,8 +54,23 @@ export default class PowerUpManager {
 
     private collectPowerUp(powerUp: PowerUp, paddle: Phaser.Physics.Arcade.Image) {
         this.soundManager.play(ASSETS.SOUNDS.POWERUP, 0.3);
+        this.applyPowerUP(powerUp.getType());
         powerUp.deactivate();
     }
 
     update() { }
+
+    private applyPowerUP(type: PowerUpType, duration = 5000) {
+        switch (type) {
+            case "expand":
+            case "fast":
+            case "shrink":
+            case "slow":
+                this.paddle.applyPowerUp(type, duration);
+                break;
+            case "life":
+                this.gameManager.addLife();
+                break;
+        }
+    }
 }

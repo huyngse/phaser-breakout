@@ -24,6 +24,12 @@ export default class GameManager extends Phaser.Events.EventEmitter {
         this.emit("scoreChanged", this.score);
     }
 
+    addLife() {
+        console.log("Life added")
+        this.lifes = Math.min(3, this.lifes + 1);
+        this.emit("lifesChanged", this.lifes);
+    }
+
     loseLife() {
         this.lifes = Math.max(0, this.lifes - 1);
         this.emit("lifesChanged", this.lifes);

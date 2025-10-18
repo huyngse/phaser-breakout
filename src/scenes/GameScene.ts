@@ -38,7 +38,7 @@ export default class GameScene extends Phaser.Scene {
         this.bricks = this.physics.add.staticGroup();
         this.levelManager.createBricks(this.bricks, this.gameManager.getLevel());
 
-        this.powerUpManager = new PowerUpManager(this, this.paddle, this.soundManager);
+        this.powerUpManager = new PowerUpManager(this, this.paddle, this.gameManager, this.soundManager);
 
         this.physics.add.collider(this.ball.sprite, this.bricks, this.hitBrick.bind(this) as ArcadePhysicsCallback);
 

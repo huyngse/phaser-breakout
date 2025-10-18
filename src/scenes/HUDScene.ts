@@ -57,8 +57,25 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     private onLifesChanged(newLifes: number) {
+        const { width } = this.scale;
+        const spacing = config.heart.spacing;
+        const y = config.heart.y;
+        while (this.hearts.length < newLifes) {
+            const totalWidth = (newLifes - 1) * spacing;
+            const startX = width / 2 - totalWidth / 2;
+            const heart = this.add.image(startX, y, ASSETS.IMAGES.LIFE)
+                .setOrigin(0.5, 0)
+                .setDisplaySize(config.heart.size, config.heart.size);
+            this.hearts.push(heart);
+        }
+
+
+        const totalWidth = (this.hearts.length - 1) * spacing;
+        const startX = width / 2 - totalWidth / 2;
+
         this.hearts.forEach((heart, i) => {
+            heart.x = startX + i * spacing;
             heart.setVisible(i < newLifes);
-        });
+        })
     }
 }
