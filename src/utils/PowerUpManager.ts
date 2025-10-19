@@ -71,6 +71,11 @@ export default class PowerUpManager {
             case "life":
                 this.gameManager.addLife();
                 break;
+            case "multi-ball":
+                if ("activateMultiBall" in this.scene && typeof this.scene.activateMultiBall == "function") {
+                    this.scene.activateMultiBall();
+                }
+                break;
         }
     }
 }
